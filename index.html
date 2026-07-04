@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<!-- saved from url=(0074)file:///D:/Users/Ryan/Documents/Marvis/Cloudflare-Workers-Proxy/index.html -->
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>edgetunnel · Node Status</title>
+<style>
+  :root {
+    --bg: oklch(0.16 0.012 260);
+    --surface: oklch(0.20 0.012 260);
+    --surface-hover: oklch(0.24 0.014 260);
+    --text-primary: oklch(0.92 0.004 95);
+    --text-secondary: oklch(0.65 0.008 95);
+    --text-muted: oklch(0.45 0.006 95);
+    --accent: oklch(0.72 0.15 80);
+    --status-online: oklch(0.65 0.18 145);
+    --border: oklch(0.28 0.014 260);
+    --radius: 12px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 680px;
+  }
+
+  /* ── Header ── */
+  .header {
+    margin-bottom: 2.5rem;
+  }
+  .header .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+  h1 {
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: var(--text-primary);
+  }
+  h1 span {
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  /* ── Status Badge ── */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    background: var(--surface);
+    border-radius: var(--radius);
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border);
+  }
+  .pulse {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--status-online);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .pulse::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1.5px solid var(--status-online);
+    animation: pulse-ring 2s cubic-bezier(0.33, 0, 0.67, 1) infinite;
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(0.85); opacity: 1; }
+    100% { transform: scale(1.6); opacity: 0; }
+  }
+  .status-text {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--status-online);
+  }
+  .status-meta {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* ── Info Grid ── */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .info-item {
+    background: var(--surface);
+    padding: 1.125rem 1.25rem;
+  }
+  .info-item .label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+    font-weight: 500;
+  }
+  .info-item .value {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    word-break: break-all;
+  }
+  .info-item .value.mono {
+    font-family: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.82rem;
+  }
+
+  /* ── Actions ── */
+  .actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-primary);
+  }
+  .btn:hover {
+    background: var(--surface-hover);
+    transform: translateY(-1px);
+  }
+  .btn:active {
+    transform: translateY(0);
+  }
+  .btn.primary {
+    background: var(--accent);
+    color: oklch(0.16 0.012 260);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .btn.primary:hover {
+    background: oklch(0.76 0.16 80);
+  }
+  .btn.green {
+    background: var(--status-online);
+    color: #fff;
+    border-color: var(--status-online);
+  }
+  .btn.green:hover {
+    background: oklch(0.70 0.19 145);
+  }
+
+  .sub-url {
+    font-family: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    word-break: break-all;
+    user-select: all;
+  }
+
+  /* ─── quote ─── */
+  .quote {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    font-style: italic;
+    font-size: 0.82rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+  }
+  .quote .attr {
+    margin-top: 1.5rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-style: normal;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 480px) {
+    body { padding: 1.25rem; }
+    .info-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse::after { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="tag">Proxy Node</div>
+    <h1>edgetunnel <span>· Status Monitor</span></h1>
+  </div>
+
+  <!-- Status -->
+  <div class="status-bar">
+    <div class="pulse"></div>
+    <span class="status-text">Online</span>
+    <span class="status-meta" id="uptime">You've been here 0s</span>
+  </div>
+
+  <!-- Info -->
+  <div class="info-grid">
+    <div class="info-item">
+      <div class="label">域名</div>
+      <div class="value">edgetunnel.izcf.dpdns.org</div>
+    </div>
+    <div class="info-item">
+      <div class="label">端口 / 传输</div>
+      <div class="value">443 · TLS</div>
+    </div>
+    <div class="info-item">
+      <div class="label">协议</div>
+      <div class="value">VLESS + WebSocket</div>
+    </div>
+    <div class="info-item">
+      <div class="label">部署平台</div>
+      <div class="value">Cloudflare Pages</div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <a href="https://edgetunnel.izcf.dpdns.org/admin" class="btn primary">管理后台</a>
+    <a href="#" class="btn green" id="subBtn" title="点击复制订阅链接">订阅链接</a>
+  </div>
+  <div class="sub-url">https://3e48c72b.edgetunnelauto.pages.dev/sub?token=796a418a796cda26d3308e519e3b****</div>
+
+  <div class="quote">
+    <div>u r waiting for a train,</div>
+    <div>the train that will take u far away,</div>
+    <div>u know where u hope this train will take you,</div>
+    <div>but you can't know for sure,</div>
+    <div>but it doesn't matter,</div>
+    <div>because we'll be together.</div>
+    <div class="attr">Powered by 2Muchbetter 2026-07-04</div>
+  </div>
+
+</div>
+
+
+<script>
+  const uptimeEl = document.getElementById('uptime');
+  const start = performance.now();
+  function fmt(ms) {
+    const s = Math.floor(ms / 1000);
+    const d = Math.floor(s / 86400), h = Math.floor(s / 3600 % 24), m = Math.floor(s / 60 % 60);
+    const sec = s % 60;
+    let parts = [];
+    if (d) parts.push(d + 'd');
+    if (h) parts.push(h + 'h');
+    if (m) parts.push(m + 'm');
+    parts.push(sec + 's');
+    return 'You\'ve been here ' + parts.join(' ');
+  }
+  uptimeEl.textContent = fmt(0);
+  setInterval(() => uptimeEl.textContent = fmt(performance.now() - start), 1000);
+
+  document.getElementById('subBtn').addEventListener('click', e => {
+    e.preventDefault();
+    const btn = e.currentTarget;
+    btn.textContent = '请联系管理后台';
+    setTimeout(() => { btn.textContent = '订阅链接'; }, 1500);
+  });
+</script>
+</body></html>
